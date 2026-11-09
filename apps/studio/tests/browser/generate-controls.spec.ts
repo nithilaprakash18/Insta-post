@@ -18,7 +18,8 @@ test("original Generate controls, static presets, carousel, Claude fallback and 
   await publishActiveTool(page);
   await openGenerate(page);
   const frame = generateFrame(page);
-  await expect(frame.locator("#ct select")).toHaveCount(12);
+  await expect(frame.locator("#ct select")).toHaveCount(9);
+  await expect(frame.locator("#ov-slider")).toBeVisible();
   await expect(frame.locator(".var")).toHaveCount(3);
 
   // Layout style changes the generated alternatives.

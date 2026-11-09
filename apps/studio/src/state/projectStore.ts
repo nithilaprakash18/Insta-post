@@ -551,11 +551,13 @@ export function createProjectStore(
         if (!artboard) return 0;
         const byId = new Map(targets.map((target) => [target.hostLayerId, target]));
         const nextTransforms = new Map<LayerId, SharedLayer["transform"]>();
+        let matchedCount = 0;
         for (const layer of state.project.layers) {
           if (layer.artboardId !== artboardId) continue;
           if (layer.locked || !layer.visible) continue;
           const target = byId.get(layer.id);
           if (!target) continue;
+          matchedCount++;
           if (
             !Number.isFinite(target.centerXPercent) ||
             !Number.isFinite(target.centerYPercent) ||
@@ -593,7 +595,7 @@ export function createProjectStore(
             nextTransforms.set(layer.id, transform);
           }
         }
-        if (nextTransforms.size === 0) return 0;
+        if (nextTransforms.size === 0) return matchedCount;
         commit((project) => ({
           ...project,
           layers: project.layers.map((layer) => {

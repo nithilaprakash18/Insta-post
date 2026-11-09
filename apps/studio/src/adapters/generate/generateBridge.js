@@ -747,6 +747,9 @@
   }
 
   function hostElementHtml(placement, asset, image) {
+    if (asset && asset.hostKind === "image") {
+      return "";
+    }
     const aspect =
       typeof asset.aspectHOverW === "number" && asset.aspectHOverW > 0
         ? asset.aspectHOverW
@@ -946,10 +949,38 @@
   }
 
   async function drawGenerateBackground(context, width, height, controls, palette, rng, imageSource) {
-    const mode = controls.background;
     context.save();
     context.globalAlpha = 1;
     context.globalCompositeOperation = "source-over";
+    if (imageSource) {
+      const img = await loadImageSafe(imageSource);
+      if (img) {
+        const imgAspect = (img.width || 1) / (img.height || 1);
+        const canvasAspect = width / height;
+        let dw, dh, dx, dy;
+        if (imgAspect > canvasAspect) {
+          dh = height;
+          dw = height * imgAspect;
+          dx = (width - dw) / 2;
+          dy = 0;
+        } else {
+          dw = width;
+          dh = width / imgAspect;
+          dx = 0;
+          dy = (height - dh) / 2;
+        }
+        context.drawImage(img, dx, dy, dw, dh);
+        const scrim = context.createLinearGradient(0, 0, 0, height);
+        scrim.addColorStop(0, "rgba(0,0,0,0.25)");
+        scrim.addColorStop(0.5, "rgba(0,0,0,0.45)");
+        scrim.addColorStop(1, "rgba(0,0,0,0.85)");
+        context.fillStyle = scrim;
+        context.fillRect(0, 0, width, height);
+        context.restore();
+        return;
+      }
+    }
+    const mode = controls.background;
     if (mode === "Atmospheric") {
       const x = 20 + rng() * 60;
       const y = rng() * 60;

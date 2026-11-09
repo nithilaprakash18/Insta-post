@@ -304,6 +304,33 @@ export function selectedGenerateTargets(
       z,
     });
   }
+  const bgAsset = source.assets.find(
+    (asset) =>
+      asset.hostKind === "image" &&
+      asset.hostLayerId &&
+      !asset.missing &&
+      (asset.on === undefined || asset.on === 1),
+  );
+  if (
+    bgAsset &&
+    bgAsset.hostLayerId &&
+    !targets.some((target) => target.hostLayerId === bgAsset.hostLayerId)
+  ) {
+    const artboardAspect = source.artboard
+      ? source.artboard.height / source.artboard.width
+      : source.frameHeight
+        ? source.frameHeight / 100
+        : 1.25;
+    targets.push({
+      hostLayerId: bgAsset.hostLayerId,
+      centerXPercent: 50,
+      centerYPercent: 50,
+      widthPercent: 100,
+      aspectHOverW: artboardAspect,
+      rotationDegrees: 0,
+      z: 0,
+    });
+  }
   return targets;
 }
 

@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Generative Art Workspace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#F3F7F6;--pn:#fff;--tx:#193438;--mu:#526C6E;--ln:#DEE7E5;--ct:#A7BFC0;--ac:#236F72;--acp:#19595C;--sa:#DCEFEB;--sh:#EAF1EF;--st:#182D30;--sf:"Instrument Sans",Inter,system-ui,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A1B;--pn:#162426;--tx:#E6F0EF;--mu:#9DB3B4;--ln:#2A3D3F;--ct:#3F5A5C;--ac:#3E9A9D;--acp:#2F8285;--sa:#21403F;--sh:#1C3234;--st:#0A1314}}
@@ -23,7 +23,7 @@ input[type=color]{padding:2px 4px;height:34px;cursor:pointer}
 button{cursor:pointer}button:hover{background:var(--sh)}button.p{background:var(--ac);color:#fff;border-color:var(--ac)}button.p:hover{background:var(--acp)}
 button:disabled{opacity:0.4;cursor:not-allowed}
 label.c{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font:500 12px/1.4 var(--sf);color:var(--mu)}
-label.c select{width:100%}
+label.c select,label.c input[type=range]{width:100%}
 .as{display:flex;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--ln)}
 .as input[type=text]{flex:1;min-width:0}.as small{color:var(--mu);flex:1}
 .seg{display:inline-flex;border:1px solid var(--ct);border-radius:8px;overflow:hidden}
@@ -31,14 +31,21 @@ label.c select{width:100%}
 .var{border:2px solid transparent;border-radius:10px;padding:12px;margin-bottom:16px;background:var(--st);color:#fff;cursor:pointer;transition:border-color 0.15s ease}
 .var.sel{border-color:var(--ac)}
 .var h3{margin:0 0 8px;font:500 12px/1.4 var(--sf);display:flex;justify-content:space-between;color:#fff}
-.row{display:flex;gap:8px;overflow-x:auto}
-.slide{position:relative;width:200px;aspect-ratio:4/5;flex:none;overflow:hidden;container-type:inline-size;border-radius:4px;cursor:pointer}
+.row{display:flex;gap:12px;overflow-x:auto}
+.slide{position:relative;width:200px;aspect-ratio:4/5;flex:none;overflow:hidden;container-type:inline-size;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.25)}
 .slide.big{width:260px}
-.slide.active-slide{box-shadow:0 0 0 2px var(--ac)}
-.bg,.tex,.acc{position:absolute;inset:0;pointer-events:none}
-.el{position:absolute;line-height:1.02;white-space:pre-line;cursor:pointer;user-select:none;transition:outline 0.1s ease}
-.el:hover{outline:1.5px dashed var(--ac);outline-offset:2px}
-.el.selected-el{outline:2px solid var(--ac) !important;outline-offset:3px !important;box-shadow:0 0 0 3px var(--sa) !important;z-index:9999 !important}
+.slide.active-slide{box-shadow:0 0 0 2px var(--ac),0 8px 24px rgba(0,0,0,0.35)}
+.poster-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.poster-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.poster-scrim{position:absolute;inset:0;pointer-events:none}
+.poster-fallback-bg{position:absolute;inset:0;width:100%;height:100%}
+.poster-no-img-badge{position:absolute;top:6px;left:6px;padding:2px 6px;border-radius:3px;background:rgba(0,0,0,0.65);color:#cbd5e1;font:500 8.5px monospace;letter-spacing:0.04em}
+.tex,.acc{position:absolute;inset:0;pointer-events:none}
+.acc{z-index:4}
+.tex{z-index:9}
+.el{position:absolute;line-height:1.02;white-space:pre-line;cursor:pointer;user-select:none;transition:outline 0.1s ease;z-index:3}
+.el:hover{outline:1.5px dashed #236F72;outline-offset:2px}
+.el.selected-el{outline:2px solid #236F72 !important;outline-offset:3px !important;box-shadow:0 0 0 3px #DCEFEB !important;z-index:9999 !important}
 .sph{border-radius:50%;aspect-ratio:1}
 .ring{border-radius:50%;aspect-ratio:1;animation:sp 8s linear infinite}
 @keyframes sp{to{rotate:360deg}}
@@ -62,7 +69,7 @@ label.c select{width:100%}
 <main>
 <aside id="L"><h2>Assets</h2><div id="al"></div>
 <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button id="addT">+ Text</button><button id="addI">+ Image</button><input type="file" id="fi" accept="image/*" hidden></div>
-<p style="color:var(--mu);font-size:11px">Assets from other tools are included by default. Toggle checkboxes to include or exclude without auto-regenerating.</p></aside>
+<p style="color:var(--mu);font-size:11px;margin-top:12px"><b>Poster Rule:</b> Photo is always the full-bleed background. Typography, 3D and vectors are composed over it.</p></aside>
 <section><p id="st"></p><div id="C"></div></section>
 <aside id="R">
 <div id="props-panel"></div>
@@ -81,70 +88,80 @@ label.c select{width:100%}
 </div>
 <script>
 const OPT={
-style:['Minimal','Editorial','Experimental','Brutalist','Surreal'],
+style:['Editorial','Minimalist','Experimental','Swiss'],
 layout:['Auto (mix)','Grid-based','Centered','Dynamic / asymmetrical','Layered / overlapping'],
 hierarchy:['Typography-led','3D / image-led','Balanced'],
-density:['Sparse','Balanced','Dense'],
 negative:['Generous margins','Balanced','Tight / packed'],
-overlap:['Separated','Moderate overlap','Heavy overlap'],
 colour:['Preserve original','Monochrome','Complementary','High contrast','Generate new palette'],
-background:['Atmospheric','Abstract','Image-based','Material-based','Depth-based','Motion-based'],
 accents:['None','Lines & borders','Geometric shapes','Small marks','Frames & dividers'],
-texture:['Smooth gradient','Film grain','Paper','Noise','Distressed'],
+texture:['None','Film grain','Paper','Noise','Distressed'],
 freedom:['Conservative','Balanced','Experimental'],
 variations:['3','2','1']};
 const CTL_LABELS={
 layout:'Composition strategy',
 style:'Visual style',
 hierarchy:'Visual hierarchy',
-density:'Composition density',
 negative:'Negative space',
-overlap:'Element overlap',
 colour:'Colour treatment',
-background:'Background treatment',
 accents:'Graphic accents',
 texture:'Texture',
 freedom:'Creative freedom',
 variations:'Number of variations'};
 const S={fmt:'post',slides:3,mode:'rules',seed:1,sel:0,activeSlide:0,selectedId:null,vars:[],edits:{},history:{undo:[],redo:[]},gen:0,
-ctl:{style:'Minimal',layout:'Auto (mix)',hierarchy:'Balanced',density:'Balanced',negative:'Balanced',overlap:'Moderate overlap',colour:'Preserve original',background:'Atmospheric',accents:'None',texture:'Film grain',freedom:'Balanced',variations:'3'},
-assets:[{id:'a1',type:'text',role:'head',text:'Make it\nloud',on:1},{id:'a2',type:'text',role:'sub',text:'Issue 04 · Autumn 2026',on:1},{id:'a3',type:'obj',name:'3D sphere',on:1},{id:'a4',type:'img',name:'Photo',src:null,on:1},{id:'a5',type:'vec',name:'Vector burst',on:1},{id:'a6',type:'motion',name:'Motion ring',on:1}]};
+ctl:{style:'Editorial',layout:'Auto (mix)',hierarchy:'Balanced',negative:'Balanced',overlap:50,colour:'Preserve original',accents:'Lines & borders',texture:'Film grain',freedom:'Balanced',variations:'3'},
+assets:[{id:'a1',type:'text',role:'head',text:'Make it\nloud',on:1},{id:'a2',type:'text',role:'sub',text:'Issue 04 · Autumn 2026',on:1},{id:'a3',type:'obj',name:'3D sphere',on:1},{id:'a4',type:'img',name:'Photo (Background)',src:null,on:1},{id:'a5',type:'vec',name:'Vector burst',on:1},{id:'a6',type:'motion',name:'Motion ring',on:1}]};
 const $=s=>document.querySelector(s);
 const rngF=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const LAY=['Grid-based','Centered','Dynamic / asymmetrical','Layered / overlapping'];
-/* ---------- palette ---------- */
-function pal(c,seed){const r=rngF(seed*7+3),h=Math.floor(r()*360);
-if(c.colour==='Monochrome')return{b1:`hsl(${h} 12% 90%)`,b2:`hsl(${h} 18% 78%)`,fg:`hsl(${h} 30% 10%)`,a1:`hsl(${h} 35% 35%)`,a2:`hsl(${h} 25% 55%)`};
-if(c.colour==='Complementary')return{b1:`hsl(${h} 40% 14%)`,b2:`hsl(${h} 50% 24%)`,fg:'#fff',a1:`hsl(${h} 90% 60%)`,a2:`hsl(${(h+180)%360} 90% 58%)`};
-if(c.colour==='High contrast')return{b1:'#000',b2:'#111',fg:'#fff',a1:'#ffe600',a2:'#00e5ff'};
-if(c.colour==='Generate new palette')return{b1:`hsl(${h} 70% 88%)`,b2:`hsl(${(h+60)%360} 75% 76%)`,fg:`hsl(${(h+200)%360} 60% 14%)`,a1:`hsl(${(h+300)%360} 85% 55%)`,a2:`hsl(${(h+30)%360} 90% 60%)`};
-return{b1:'#f3efe6',b2:'#e2dccf',fg:'#141414',a1:'#ff5a36',a2:'#3a6cff'}}
-/* ---------- rule engine ---------- */
-const BASE={head:55,sub:50,obj:34,img:36,vec:24,motion:28},FOC={head:78,obj:62,img:60};
-const AR={head:.5,sub:.14,obj:1,img:1.25,vec:1,motion:1};
+/* ---------- palette & color grading ---------- */
+function pal(c,seed){
+const r=rngF(seed*7+3),h=Math.floor(r()*360);
+if(c.colour==='Monochrome')return{b1:'#111',b2:'#1a1a1a',fg:'#ffffff',sub:'#cbd5e1',a1:'#e2e8f0',a2:'#94a3b8',grade:'filter:grayscale(100%) contrast(120%) brightness(0.85);',scrim:'linear-gradient(180deg,rgba(0,0,0,0.35) 0%,rgba(10,10,10,0.85) 100%)'};
+if(c.colour==='Complementary')return{b1:'#0b1523',b2:'#152238',fg:'#ffffff',sub:'#fef08a',a1:'#fbbf24',a2:'#f59e0b',grade:'filter:contrast(115%) brightness(0.75) hue-rotate(-20deg);',scrim:'linear-gradient(180deg,rgba(11,21,35,0.4) 0%,rgba(7,14,24,0.88) 100%)'};
+if(c.colour==='High contrast')return{b1:'#000',b2:'#050505',fg:'#facc15',sub:'#ffffff',a1:'#facc15',a2:'#38bdf8',grade:'filter:contrast(135%) brightness(0.68);',scrim:'linear-gradient(180deg,rgba(0,0,0,0.45) 0%,rgba(0,0,0,0.92) 100%)'};
+if(c.colour==='Generate new palette')return{b1:`hsl(${h} 40% 12%)`,b2:`hsl(${h} 45% 8%)`,fg:'#ffffff',sub:`hsl(${h} 75% 85%)`,a1:`hsl(${h} 85% 65%)`,a2:`hsl(${(h+180)%360} 85% 60%)`,grade:`filter:contrast(110%) brightness(0.8);`,scrim:`linear-gradient(180deg,hsla(${h},35%,12%,0.35) 0%,hsla(${h},45%,8%,0.88) 100%)`};
+return{b1:'#193438',b2:'#0F1F21',fg:'#ffffff',sub:'#CFE4E1',a1:'#8FD6CF',a2:'#236F72',grade:'filter:contrast(105%) brightness(0.85);',scrim:'linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.4) 40%,rgba(0,0,0,0.75) 100%)'};
+}
+/* ---------- rule engine (foreground poster elements) ---------- */
+const BASE={head:70,sub:55,obj:38,vec:26,motion:30},FOC={head:86,obj:64};
+const AR={head:.48,sub:.14,obj:1,img:1.25,vec:1,motion:1};
 const kind=a=>a.type==='text'?a.role||'sub':a.type;
 function rules(assets,c,rng,si,layout){
-const el=assets.filter(a=>a.on);if(!el.length)return[];
+const fg=assets.filter(a=>a.on&&kind(a)!=='img');
+if(!fg.length)return[];
 const fr=c.freedom==='Conservative'?0:c.freedom==='Balanced'?1:2;
-let foc=null;const find=t=>el.find(a=>kind(a)===t);
+let foc=null;const find=t=>fg.find(a=>kind(a)===t);
 const hier=si===1&&c.hierarchy!=='Typography-led'||si===1?'3D / image-led':si===2?'Balanced':c.hierarchy;
-if(hier==='Typography-led')foc=find('head');else if(hier==='3D / image-led')foc=find('img')||find('obj')||find('head');
-const dm={Sparse:.85,Balanced:1,Dense:1.15}[c.density],m={'Generous margins':16,Balanced:9,'Tight / packed':3}[c.negative];
-const P=el.map(a=>{const k=kind(a),isF=a===foc;let w=(isF&&FOC[k]||BASE[k]||30)*(isF?1:dm);
-if(fr===2)w*=.75+rng()*.8;else if(fr===1)w*=.9+rng()*.2;
-w=Math.min(w,100-m*1.2);return{a,k,id:a.id,w,h:w*AR[k],x:50,y:62,r:0,z:{head:4,sub:4,obj:3,img:2,vec:1,motion:1}[k]+(isF?2:0),isF}});
+if(hier==='Typography-led')foc=find('head');else if(hier==='3D / image-led')foc=find('obj')||find('head');
+const m={'Generous margins':18,Balanced:10,'Tight / packed':4}[c.negative]||10;
+const P=fg.map(a=>{const k=kind(a),isF=a===foc;let w=isF&&FOC[k]||BASE[k]||32;
+if(c.style==='Swiss'&&k==='head')w=Math.min(88,Math.max(76,w));
+if(c.style==='Minimalist')w*=0.88;
+if(c.style==='Experimental'&&isF)w=Math.min(94,w*1.15);
+if(fr===2)w*=.85+rng()*.3;else if(fr===1)w*=.95+rng()*.1;
+w=Math.min(w,100-m*1.2);return{a,k,id:a.id,w,h:w*AR[k],x:50,y:62,r:0,z:{head:5,sub:4,obj:3,vec:2,motion:2}[k]+(isF?2:0),isF}});
 const n=P.length;
 P.forEach((p,i)=>{
-if(layout==='Centered'){if(p.isF||(!foc&&i===0)){p.x=50;p.y=62}else{const g=P.filter(q=>!(q.isF||(!foc&&q===P[0]))),j=g.indexOf(p),an=(j/Math.max(g.length,1))*6.283+rng()*.6;p.x=50+Math.cos(an)*(38-m*.4);p.y=62+Math.sin(an)*(46-m*.4)}}
+if(c.style==='Swiss'){
+const colLeft=m+p.w/2;
+if(p.k==='head'){p.x=colLeft;p.y=m+p.h/2+4}
+else if(p.k==='sub'){p.x=colLeft;p.y=m+p.h/2+38}
+else if(p.k==='obj'){p.x=100-m-p.w/2;p.y=125-m-p.h/2-8}
+else{p.x=50+(i%2?20:-20);p.y=62+(i*18)}
+p.r=0;return;
+}
+if(layout==='Centered'){if(p.isF||(!foc&&i===0)){p.x=50;p.y=p.k==='head'?38:58}else{const g=P.filter(q=>!(q.isF||(!foc&&q===P[0]))),j=g.indexOf(p),an=(j/Math.max(g.length,1))*6.283+rng()*.4;p.x=50+Math.cos(an)*(34-m*.3);p.y=62+Math.sin(an)*(42-m*.3)}}
 else if(layout==='Grid-based'){const rows=Math.ceil(n/2),cx=i%2,rw=i>>1;p.x=m+(100-2*m)*(cx?.75:.25);p.y=m*1.25+(125-2.5*m)*((rw+.5)/rows);if(n%2&&i===n-1){p.x=50}}
-else if(layout==='Dynamic / asymmetrical'){p.x=p.isF?30+rng()*40:m+rng()*(100-2*m);p.y=p.isF?40+rng()*45:m+rng()*(125-2*m);if(rng()>.5)p.x=100-p.x}
-else{p.x=50+(rng()-.5)*28;p.y=62+(rng()-.5)*34}
-const rr=[0,6,34][fr]*(layout==='Grid-based'?.3:1);p.r=(rng()-.5)*rr});
-const k={Separated:1,'Moderate overlap':.18,'Heavy overlap':-.04}[c.overlap],lo=fr===2?-8:m,hiX=fr===2?108:100-m,hiY=fr===2?133:125-m;
+else if(layout==='Dynamic / asymmetrical'){p.x=p.isF?28+rng()*44:m+rng()*(100-2*m);p.y=p.isF?34+rng()*48:m+rng()*(125-2*m);if(rng()>.5)p.x=100-p.x}
+else{p.x=50+(rng()-.5)*24;p.y=62+(rng()-.5)*30}
+const rr=[0,4,16][fr]*(c.style==='Swiss'?0:1);p.r=(rng()-.5)*rr});
+const ovVal=typeof c.overlap==='number'?c.overlap:50;
+const k=ovVal<=33?1.0:ovVal<=66?0.22:-0.25;
+const lo=fr===2?-4:m,hiX=fr===2?104:100-m,hiY=fr===2?129:125-m;
 for(let it=0;it<60;it++){for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const a=P[i],b=P[j],dx=b.x-a.x,dy=b.y-a.y,ox=(a.w+b.w)/2-Math.abs(dx),oy=(a.h+b.h)/2-Math.abs(dy);
 if(k>0&&ox>0&&oy>0){const f=k*.06;if(ox<oy){const s=Math.sign(dx)||1;a.x-=s*ox*f;b.x+=s*ox*f}else{const s=Math.sign(dy)||1;a.y-=s*oy*f;b.y+=s*oy*f}}
-else if(k<0&&(Math.abs(dx)>a.w*.3||Math.abs(dy)>a.h*.3)){a.x+=dx*.01;b.x-=dx*.01;a.y+=dy*.01;b.y-=dy*.01}}
+else if(k<0&&(Math.abs(dx)>a.w*.3||Math.abs(dy)>a.h*.3)){a.x+=dx*.012;b.x-=dx*.012;a.y+=dy*.012;b.y-=dy*.012}}
 P.forEach(p=>{p.x=Math.max(lo+p.w/2*(fr===2?.3:1),Math.min(hiX-p.w/2*(fr===2?.3:1),p.x));p.y=Math.max(lo+p.h/2*(fr===2?.3:1),Math.min(hiY-p.h/2*(fr===2?.3:1),p.y))})}
 return P.map(p=>({id:p.id,x:+p.x.toFixed(1),y:+p.y.toFixed(1),w:+p.w.toFixed(1),r:+p.r.toFixed(1),z:p.z}))}
 /* ---------- effective placements (dual-state) ---------- */
@@ -157,52 +174,46 @@ const ve=S.edits[vIdx];if(!ve)return false;
 for(const s in ve){if(Object.keys(ve[s]||{}).length>0)return true}
 return false}
 /* ---------- rendering ---------- */
-const FONT={Minimal:'font:300 1 system-ui,sans-serif;letter-spacing:-.02em',Editorial:'font:700 1 Georgia,serif;letter-spacing:-.03em',Experimental:'font:600 1 ui-monospace,Menlo,monospace;font-style:italic;text-transform:uppercase',Brutalist:'font:900 1 Impact,"Arial Black",sans-serif;text-transform:uppercase',Surreal:'font:italic 400 1 Georgia,serif'};
-const fnt=(s,sz)=>FONT[s].replace(' 1 ',` ${sz}cqw/1.02 `);
-function bgHtml(c,P,rng,img,vIdx,sIdx){
+const FONT={Editorial:'font:700 1 "Instrument Sans",Georgia,serif;letter-spacing:-.03em',Minimalist:'font:400 1 "Instrument Sans",Inter,sans-serif;letter-spacing:-.015em',Experimental:'font:800 1 "Instrument Sans",Impact,sans-serif;letter-spacing:-.04em;text-transform:uppercase',Swiss:'font:700 1 "Instrument Sans",Helvetica,Arial,sans-serif;letter-spacing:-.035em;line-height:0.95'};
+const fnt=(s,sz)=>(FONT[s]||FONT.Editorial).replace(' 1 ',` ${sz}cqw/1.02 `);
+function bgPosterHtml(c,P,rng,img,vIdx,sIdx){
 const bgOv=S.edits&&S.edits[vIdx]&&S.edits[vIdx][sIdx]&&S.edits[vIdx][sIdx].__bg;
-const g=(a,b)=>`linear-gradient(${Math.floor(rng()*360)}deg,${a},${b})`;
-const bgm=bgOv&&bgOv.style||c.background;let h='';
-if(bgOv&&bgOv.color){h=`background:${bgOv.color}`;}
-else if(bgm==='Atmospheric')h=`background:radial-gradient(60% 50% at ${20+rng()*60}% ${rng()*60}%,${P.a2}88,transparent),${g(P.b1,P.b2)}`;
-else if(bgm==='Abstract')h=`background:${g(P.b1,P.b2)}`,extra=`<svg viewBox="0 0 100 125" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">${Array.from({length:5},()=>`<circle cx="${rng()*100}" cy="${rng()*125}" r="${6+rng()*22}" fill="${rng()>.5?P.a1:P.a2}" opacity=".18"/>`).join('')}${Array.from({length:4},(_,i)=>`<rect x="${rng()*80}" y="${i*30+rng()*8}" width="${15+rng()*40}" height="2" fill="${P.fg}" opacity=".25"/>`).join('')}</svg>`;
-else if(bgm==='Image-based')h=img?`background:linear-gradient(${P.b1}66,${P.b2}aa),url(${img}) center/cover`:`background:linear-gradient(160deg,${P.a2}99,${P.a1}77),${g(P.b1,P.b2)}`;
-else if(bgm==='Material-based')h=`background:repeating-linear-gradient(${Math.floor(rng()*180)}deg,${P.b1} 0 2px,${P.b2} 2px 4px)`;
-else if(bgm==='Depth-based')h=`background:${g(P.b1,P.b2)}`,extra=Array.from({length:4},(_,i)=>`<div style="position:absolute;left:${rng()*80}%;top:${rng()*80}%;width:${20+i*12}%;aspect-ratio:1;border-radius:50%;background:${i%2?P.a1:P.a2};opacity:.35;filter:blur(${3+i*3}px)"></div>`).join('');
-else h=`background:linear-gradient(120deg,${P.b1},${P.a2}77,${P.b2},${P.a1}66);background-size:300% 300%`,cls=' mo';
-return`<div class="bg${typeof cls!=='undefined'?cls:''}" style="${h}"></div>`+(typeof extra!=='undefined'?extra:'')}
-var extra,cls;
+if(img){
+return`<div class="poster-bg"><img src="${img}" class="poster-bg-img" alt="" style="${P.grade||''}${bgOv&&bgOv.color?`;background:${bgOv.color}`:''}"><div class="poster-scrim" style="${P.scrim||''}"></div></div>`}
+const bgCol=bgOv&&bgOv.color||P.b1;
+return`<div class="poster-bg"><div class="poster-fallback-bg" style="background:${P.scrim?P.b1:bgCol};${P.scrim?'background:'+P.scrim:''}"></div><div class="poster-no-img-badge">No image supplied · Fallback tone</div></div>`}
 const GR=(f,o,b)=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='${f}' numOctaves='3'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='${o}'/></svg>`)}")`;
-function texHtml(t){const m={'Film grain':[.9,.35],Paper:[.04,.3],Noise:[.5,.5],Distressed:[.6,.55]}[t];return m?`<div class="tex" style="background:${GR(m[0],1)};opacity:${m[1]};mix-blend-mode:multiply;${t==='Distressed'?'-webkit-mask-image:radial-gradient(circle at 30% 40%,#000 20%,transparent 90%);':''}"></div>`:''}
+function texHtml(t){const m={'Film grain':[.9,.32],Paper:[.04,.28],Noise:[.5,.45],Distressed:[.6,.5]}[t];return m?`<div class="tex" style="background:${GR(m[0],1)};opacity:${m[1]};mix-blend-mode:overlay;${t==='Distressed'?'-webkit-mask-image:radial-gradient(circle at 30% 40%,#000 25%,transparent 90%);':''}"></div>`:''}
 function accHtml(c,P,rng){const a=c.accents,f=P.fg,s=`position:absolute;`;
-if(a==='Lines & borders')return`<div class="acc"><div style="${s}left:6%;right:6%;top:6%;height:2px;background:${f}"></div><div style="${s}left:6%;right:6%;bottom:6%;height:2px;background:${f}"></div></div>`;
-if(a==='Geometric shapes')return`<div class="acc"><div style="${s}left:${rng()*70}%;top:${rng()*80}%;width:12%;aspect-ratio:1;border:.8cqw solid ${P.a1};border-radius:50%"></div><div style="${s}right:${rng()*30}%;top:${rng()*70}%;width:10%;aspect-ratio:1;background:${P.a2};opacity:.8"></div></div>`;
-if(a==='Small marks')return`<div class="acc" style="font:700 4cqw monospace;color:${f}"><span style="${s}left:5%;top:4%">+</span><span style="${s}right:5%;top:4%">+</span><span style="${s}left:5%;bottom:3%">+</span><span style="${s}right:5%;bottom:3%">+</span></div>`;
-if(a==='Frames & dividers')return`<div class="acc" style="inset:4cqw;border:.7cqw solid ${f}"></div>`;return''}
+if(c.style==='Swiss')return`<div class="acc" style="color:${f}"><div style="${s}left:6%;top:5%;font:700 3.2cqw monospace;letter-spacing:.1em;opacity:.85">01 // SWISS GRID</div><div style="${s}right:6%;top:5%;font:500 2.8cqw monospace;opacity:.65">FIG. 1.0</div><div style="${s}left:6%;right:6%;top:9%;height:1px;background:${f};opacity:.35"></div><div style="${s}left:6%;bottom:5%;font:500 2.8cqw monospace;opacity:.65">CH-8001 · ZÜRICH</div><div style="${s}right:6%;bottom:5%;font:700 3cqw monospace;opacity:.85">+ +</div></div>`;
+if(a==='Lines & borders')return`<div class="acc"><div style="${s}left:6%;right:6%;top:6%;height:1.5px;background:${f};opacity:.65"></div><div style="${s}left:6%;right:6%;bottom:6%;height:1.5px;background:${f};opacity:.65"></div></div>`;
+if(a==='Geometric shapes')return`<div class="acc"><div style="${s}left:${rng()*70}%;top:${rng()*80}%;width:12%;aspect-ratio:1;border:.8cqw solid ${P.a1};border-radius:50%;opacity:.85"></div><div style="${s}right:${rng()*30}%;top:${rng()*70}%;width:10%;aspect-ratio:1;background:${P.a2};opacity:.8"></div></div>`;
+if(a==='Small marks')return`<div class="acc" style="font:700 4cqw monospace;color:${f};opacity:.85"><span style="${s}left:5%;top:4%">+</span><span style="${s}right:5%;top:4%">+</span><span style="${s}left:5%;bottom:3%">+</span><span style="${s}right:5%;bottom:3%">+</span></div>`;
+if(a==='Frames & dividers')return`<div class="acc" style="inset:4cqw;border:.7cqw solid ${f};opacity:.65"></div>`;return''}
 function elHtml(p,a,P,c,img,vIdx,sIdx){const k=kind(a),s=c.style;
 const isSel=S.selectedId===p.id&&S.sel===vIdx&&(S.activeSlide===sIdx||sIdx===undefined);
 if(p.hidden)return'';
 let st=`left:${p.x}%;top:${p.y/1.25}%;width:${p.w}%;transform:translate(-50%,-50%) rotate(${p.r}deg);z-index:${p.z};`,h='';
-const org=c.colour==='Preserve original';
-const txtCol=p.color||P.fg;
+const txtCol=p.color||(k==='head'?P.fg:P.sub);
 const txtVal=p.text!==undefined?p.text:a.text;
 const szMult=p.fontSizeMult||1;
-if(k==='head'){st+=`color:${txtCol};text-align:center;${fnt(s,p.w*.27*szMult)};${s==='Brutalist'?`text-shadow:.8cqw .8cqw 0 ${P.a1};`:''}${s==='Surreal'&&!p.color?`background:linear-gradient(90deg,${P.a1},${P.a2});-webkit-background-clip:text;color:transparent;`:''}`;h=esc(txtVal)}
-else if(k==='sub'){st+=`color:${txtCol};text-align:center;${fnt(s,p.w*.085*szMult)};font-weight:400`;h=esc(txtVal)}
-else if(k==='obj'){st+=`background:radial-gradient(circle at 32% 28%,#fff 0,${P.a2} 30%,${P.a1} 75%,#000 130%);box-shadow:0 ${p.w*.2}cqw ${p.w*.3}cqw #0004;aspect-ratio:1`;h=''}
-else if(k==='img'){const src=a.src||img;st+=`aspect-ratio:4/5;background:${src?`url(${src}) center/cover`:`linear-gradient(180deg,${P.a2} 0 45%,${P.a1} 45% 70%,${P.fg} 70%)`};border-radius:${s==='Brutalist'?0:s==='Surreal'?'50% 50% 0 0':'1cqw'};${s==='Brutalist'?`border:1cqw solid ${P.fg}`:''}`}
-else if(k==='vec'){st+='aspect-ratio:1';const fil=p.color||(org?P.a2:P.a1);const pts=Array.from({length:24},(_,i)=>{const r=i%2?28:48,an=i*Math.PI/12;return(50+r*Math.cos(an)).toFixed(1)+','+(50+r*Math.sin(an)).toFixed(1)}).join(' ');h=`<svg viewBox="0 0 100 100" style="width:100%;height:100%"><polygon points="${pts}" fill="${fil}"/></svg>`}
+const textShadow=`text-shadow:0 2px 14px rgba(0,0,0,0.65);`;
+if(k==='head'){st+=`color:${txtCol};text-align:${s==='Swiss'?'left':'center'};${fnt(s,p.w*.28*szMult)};${textShadow}`;h=esc(txtVal)}
+else if(k==='sub'){st+=`color:${txtCol};text-align:${s==='Swiss'?'left':'center'};${fnt(s,p.w*.085*szMult)};font-weight:400;${textShadow}`;h=esc(txtVal)}
+else if(k==='obj'){st+=`background:radial-gradient(circle at 32% 28%,#fff 0,${P.a2} 30%,${P.a1} 75%,#000 130%);box-shadow:0 ${p.w*.25}cqw ${p.w*.35}cqw rgba(0,0,0,0.5);aspect-ratio:1;border-radius:50%`;h=''}
+else if(k==='vec'){st+='aspect-ratio:1';const fil=p.color||P.a1;const pts=Array.from({length:24},(_,i)=>{const r=i%2?28:48,an=i*Math.PI/12;return(50+r*Math.cos(an)).toFixed(1)+','+(50+r*Math.sin(an)).toFixed(1)}).join(' ');h=`<svg viewBox="0 0 100 100" style="width:100%;height:100%;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5))"><polygon points="${pts}" fill="${fil}"/></svg>`}
 else{st+=`border:${Math.max(p.w*.08,.6)}cqw dashed ${P.fg};aspect-ratio:1`;return`<div class="el ring${isSel?' selected-el':''}" data-el-id="${esc(p.id)}" style="${st}"></div>`}
-if(k==='obj')st+=';border-radius:50%';
 return`<div class="el${isSel?' selected-el':''}" data-el-id="${esc(p.id)}" style="${st}">${h}</div>`}
-function slideHtml(pl,c,seed,assets,big,vIdx,sIdx){const P=pal(c,seed),rng=rngF(seed*13+5),img=(assets.find(a=>a.type==='img'&&a.src)||{}).src;
-extra=undefined;cls=undefined;
+function slideHtml(pl,c,seed,assets,big,vIdx,sIdx){
+const P=pal(c,seed),rng=rngF(seed*13+5);
+const bgAsset=assets.find(a=>kind(a)==='img'&&a.on);
+const img=bgAsset?bgAsset.src||'':(assets.find(a=>kind(a)==='img'&&a.src)||{}).src||'';
 const effPl=pl.map(p=>getEffective(vIdx,sIdx,p));
 const body=effPl.map(p=>{const a=assets.find(x=>x.id===p.id);return a?elHtml(p,a,P,c,img,vIdx,sIdx):''}).join('');
 const isActSlide=S.sel===vIdx&&(S.activeSlide===sIdx||sIdx===undefined);
-return`<div class="slide${big?' big':''}${isActSlide?' active-slide':''}" data-v="${vIdx}" data-s="${sIdx}">${bgHtml(c,P,rng,img,vIdx,sIdx)}${body}${accHtml(c,P,rng)}${texHtml(c.texture)}</div>`}
+return`<div class="slide${big?' big':''}${isActSlide?' active-slide':''}" data-v="${vIdx}" data-s="${sIdx}">${bgPosterHtml(c,P,rng,img,vIdx,sIdx)}${body}${accHtml(c,P,rng)}${texHtml(c.texture)}</div>`}
 /* ---------- generation ---------- */
-const FIXED=[{style:'Minimal',layout:'Centered',hierarchy:'Typography-led',density:'Sparse',negative:'Generous margins',overlap:'Separated',colour:'Preserve original',background:'Atmospheric',accents:'None',texture:'Paper',freedom:'Conservative'},{style:'Editorial',layout:'Grid-based',hierarchy:'Balanced',density:'Balanced',negative:'Balanced',overlap:'Moderate overlap',colour:'Preserve original',background:'Material-based',accents:'Lines & borders',texture:'Film grain',freedom:'Conservative'},{style:'Brutalist',layout:'Layered / overlapping',hierarchy:'3D / image-led',density:'Dense',negative:'Tight / packed',overlap:'Heavy overlap',colour:'High contrast',background:'Abstract',accents:'Small marks',texture:'Noise',freedom:'Balanced'}];
+const FIXED=[{style:'Editorial',layout:'Centered',hierarchy:'Typography-led',negative:'Balanced',overlap:50,colour:'Preserve original',accents:'Lines & borders',texture:'Film grain',freedom:'Conservative'},{style:'Swiss',layout:'Grid-based',hierarchy:'Balanced',negative:'Balanced',overlap:30,colour:'Monochrome',accents:'Lines & borders',texture:'Paper',freedom:'Conservative'},{style:'Experimental',layout:'Dynamic / asymmetrical',hierarchy:'3D / image-led',negative:'Tight / packed',overlap:70,colour:'High contrast',accents:'Small marks',texture:'Noise',freedom:'Balanced'}];
 const nSl=()=>S.fmt==='post'?1:S.slides;
 function ruleVars(fixed){const N=+S.ctl.variations,out=[];
 for(let v=0;v<N;v++){
@@ -210,6 +221,7 @@ let c=fixed?{...S.ctl,...FIXED[v]}:{...S.ctl};
 if(!fixed&&v>0){
 const otherLays=LAY.filter(l=>l!==S.ctl.layout);
 c={...c,layout:otherLays[(v-1)%otherLays.length],hierarchy:v===1?'3D / image-led':'Balanced'};
+if(v===1)c.style='Swiss';else if(v===2)c.style='Experimental';
 }
 const seed=fixed?v+1:S.seed*100+v*17;
 const L=c.layout==='Auto (mix)'?LAY[(v+S.seed)%4]:c.layout;
@@ -217,8 +229,8 @@ const sl=[];
 for(let i=0;i<nSl();i++)sl.push(rules(S.assets,c,rngF(seed+i*31),i,L));
 out.push({c,seed,sl})}return out}
 async function claudeVars(){const sm=await claude.use('sample');if(!sm)throw new Error('Claude sampling is unavailable here');
-const N=+S.ctl.variations,ns=nSl(),el=S.assets.filter(a=>a.on).map(a=>({id:a.id,kind:kind(a),aspect_h_over_w:AR[kind(a)]}));
-const q=`You are a layout engine for an Instagram ${ns>1?'carousel':'post'} canvas 100 wide x 125 tall (4:5). Place these elements: ${JSON.stringify(el)}.\nCreative settings: ${JSON.stringify(S.ctl)}.\nReturn ONLY JSON: {"variants":[ [ [ {"id":string,"x":number,"y":number,"w":number,"r":number,"z":integer} ] ] ]}. Outer array = ${N} distinct variants, each with ${ns} slides, each slide with one placement per element id. x,y = element CENTER (x 0-100, y 0-125), w = width in canvas-width units (10-95), r = rotation degrees, z = stacking. Respect margins (negative space), density, overlap, hierarchy and creative freedom. Keep a coherent identity across slides while varying composition.`;
+const N=+S.ctl.variations,ns=nSl(),el=S.assets.filter(a=>a.on&&kind(a)!=='img').map(a=>({id:a.id,kind:kind(a),aspect_h_over_w:AR[kind(a)]}));
+const q=`You are a layout engine for an Instagram poster canvas 100 wide x 125 tall. Place these foreground elements over a full-bleed photo background: ${JSON.stringify(el)}. Creative settings: ${JSON.stringify(S.ctl)}. Return ONLY JSON: {"variants":[ [ [ {"id":string,"x":number,"y":number,"w":number,"r":number,"z":integer} ] ] ]}.`;
 const d=await sm.json(q,{modelTier:'quick',cache:false});
 const ids=new Set(el.map(e=>e.id)),ok=x=>Array.isArray(x)&&x.length;
 if(!ok(d.variants))throw new Error('Unexpected response');
@@ -228,12 +240,26 @@ if(S.mode==='claude'){$('#st').textContent='Asking Claude to arrange the layouts
 try{const v=await claudeVars();if(my!==S.gen)return;S.vars=v;note='Layouts decided by Claude.'}
 catch(e){if(my!==S.gen)return;S.vars=ruleVars(false);note='Claude mode failed ('+(e&&e.message||e.code||'error')+'), showing rule-based layouts instead.'}}
 else if(S.mode==='static'){S.vars=ruleVars(true);note='Static mode: pre-set examples that ignore the controls.'}
-else{S.vars=ruleVars(false);note='Rule-based engine: instant, composed from your creative controls.'}
+else{S.vars=ruleVars(false);note='Poster engine: photo is background, typography & graphics art-directed live.'}
 S.sel=Math.min(S.sel,S.vars.length-1);$('#st').textContent=note;draw();renderProps()}
 function draw(){
 $('#C').innerHTML=S.vars.map((v,i)=>{
 const effLayout=v.c.layout==='Auto (mix)'?LAY[(i+S.seed)%4]:v.c.layout;
-return`<div class="var${i===S.sel?' sel':''}" data-i="${i}"><h3><span>Alternative ${i+1}${effLayout&&S.mode!=='claude'?' · '+effLayout:''}</span><span>${i===S.sel?'Selected':'Select'}</span></h3><div class="row">${v.sl.map((pl,sIdx)=>slideHtml(pl,v.c,v.seed,S.assets,false,i,sIdx)).join('')}</div></div>`}).join('')}
+return`<div class="var${i===S.sel?' sel':''}" data-i="${i}"><h3><span>Alternative ${i+1}${effLayout&&S.mode!=='claude'?' · '+effLayout:''} · ${v.c.style||'Editorial'}</span><span>${i===S.sel?'Selected':'Select'}</span></h3><div class="row">${v.sl.map((pl,sIdx)=>slideHtml(pl,v.c,v.seed,S.assets,false,i,sIdx)).join('')}</div></div>`}).join('')}
+/* ---------- live reactive updates (NO REGENERATE NEEDED) ---------- */
+function updateLive(reason){
+for(let v=0;v<S.vars.length;v++){
+const vObj=S.vars[v];
+const L=v===0?(S.ctl.layout==='Auto (mix)'?LAY[(v+S.seed)%4]:S.ctl.layout):vObj.c.layout;
+vObj.c=Object.assign({},S.ctl,{layout:L});
+vObj.sl=[];
+for(let i=0;i<nSl();i++){
+vObj.sl.push(rules(S.assets,vObj.c,rngF(vObj.seed+i*31),i,L));
+}
+}
+draw();renderProps();
+$('#st').textContent=`Live update: ${reason||'Settings updated'}.`;
+}
 /* ---------- properties panel (controlled editing) ---------- */
 function pushHistory(){
 if(!S.history)S.history={undo:[],redo:[]};
@@ -248,9 +274,7 @@ const sIdx=S.activeSlide||0;
 if(!S.edits[S.sel][sIdx])S.edits[S.sel][sIdx]={};
 if(!S.edits[S.sel][sIdx][elId])S.edits[S.sel][sIdx][elId]={};
 S.edits[S.sel][sIdx][elId][key]=val;
-draw();renderProps();
-if(typeof dirtyTimer!=='undefined')clearTimeout(dirtyTimer);
-}
+draw();renderProps()}
 function setBgProp(key,val){
 pushHistory();
 if(!S.edits)S.edits={};
@@ -288,9 +312,9 @@ const canRedo=S.history&&S.history.redo&&S.history.redo.length>0;
 if(!raw||!eff||!asset){
 const bgOv=S.edits&&S.edits[vIdx]&&S.edits[vIdx][sIdx]&&S.edits[vIdx][sIdx].__bg;
 pEl.innerHTML=`<div class="props-card">
-<h3><span>Slide Properties</span><span class="badge">Slide ${sIdx+1}</span></h3>
-<p style="font-size:11px;color:var(--mu);margin:0 0 10px">Click any element in the preview to edit its properties.</p>
-<label class="c">Background Colour<input type="color" id="p-bg-c" value="${bgOv&&bgOv.color||'#ffffff'}"></label>
+<h3><span>Poster Properties</span><span class="badge">Slide ${sIdx+1}</span></h3>
+<p style="font-size:11px;color:var(--mu);margin:0 0 10px">Click any element on the poster to edit its properties.</p>
+<label class="c">Background Tint<input type="color" id="p-bg-c" value="${bgOv&&bgOv.color||'#193438'}"></label>
 <div class="props-btn-row">
 <button id="p-undo" ${canUndo?'':'disabled'}>Undo</button>
 <button id="p-redo" ${canRedo?'':'disabled'}>Redo</button>
@@ -302,19 +326,19 @@ if($('#p-undo'))$('#p-undo').onclick=doUndo;
 if($('#p-redo'))$('#p-redo').onclick=doRedo;
 return}
 const k=kind(asset);
-const kName={head:'Headline',sub:'Subheading',img:'Image',obj:'3D Object',vec:'Vector',motion:'Motion'}[k]||'Element';
+const kName={head:'Headline',sub:'Subhead',obj:'3D Object',vec:'Vector',motion:'Motion'}[k]||'Element';
 let typeFields='';
 if(k==='head'||k==='sub'||asset.type==='text'){
 const tVal=eff.text!==undefined?eff.text:asset.text||'';
-const cVal=eff.color||'#193438';
+const cVal=eff.color||'#ffffff';
 const sm=eff.fontSizeMult||1;
 typeFields=`<label class="c">Text content<textarea id="p-txt" rows="2">${esc(tVal)}</textarea></label>
 <div class="props-row">
 <label class="c">Colour<input type="color" id="p-col" value="${cVal}"></label>
-<label class="c">Scale (${sm.toFixed(2)}x)<input type="range" id="p-sm" min="0.5" max="2" step="0.05" value="${sm}"></label>
+<label class="c">Scale (${sm.toFixed(2)}x)<input type="range" id="p-sm" min="0.5" max="2.2" step="0.05" value="${sm}"></label>
 </div>`}
 else if(k==='vec'){
-const cVal=eff.color||'#236F72';
+const cVal=eff.color||'#8FD6CF';
 typeFields=`<label class="c">Fill Colour<input type="color" id="p-col" value="${cVal}"></label>`}
 const fH=window.__studioGenFrameHeight||125;
 pEl.innerHTML=`<div class="props-card">
@@ -368,13 +392,39 @@ $('#slw').innerHTML=S.fmt==='carousel'?`Slides <select id="ns">${[1,2,3].map(n=>
 if($('#ns'))$('#ns').onchange=e=>{S.slides=+e.target.value;gen()};
 seg($('#mode'),[['rules','Rule-based'],['claude','Claude'],['static','Static']],S.mode,k=>{S.mode=k;head();gen()})}
 function assets(){$('#al').innerHTML=S.assets.map(a=>`<div class="as"><input type="checkbox" data-id="${a.id}" ${a.on?'checked':''}>${a.type==='text'?`<input type="text" data-t="${a.id}" value="${esc(a.text)}">`:`<small>${esc(a.name)}${a.type==='img'&&a.src?' (yours)':''}</small>`}</div>`).join('')}
-$('#al').onchange=e=>{const id=e.target.dataset.id;if(id){S.assets.find(a=>a.id===id).on=e.target.checked?1:0;$('#st').textContent='Asset inclusion updated. Click "Regenerate" to recompose.'}};
-$('#al').oninput=e=>{const id=e.target.dataset.t;if(id){S.assets.find(a=>a.id===id).text=e.target.value;$('#st').textContent='Text updated. Click "Regenerate" to apply to baseline.'}};
-$('#addT').onclick=()=>{S.assets.push({id:'t'+Date.now(),type:'text',role:'sub',text:'New text',on:1});assets();$('#st').textContent='New text added. Click "Regenerate" to place it.'};
+$('#al').onchange=e=>{const id=e.target.dataset.id;if(id){const a=S.assets.find(x=>x.id===id);if(a)a.on=e.target.checked?1:0;updateLive('Asset toggled')}};
+$('#al').oninput=e=>{const id=e.target.dataset.t;if(id){const a=S.assets.find(x=>x.id===id);if(a)a.text=e.target.value;updateLive('Text edited')}};
+$('#addT').onclick=()=>{S.assets.push({id:'t'+Date.now(),type:'text',role:'sub',text:'New text',on:1});assets();updateLive('New text added')};
 $('#addI').onclick=()=>$('#fi').click();
-$('#fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const ex=S.assets.find(a=>a.type==='img'&&!a.src);if(ex){ex.src=r.result;ex.name=f.name}else S.assets.push({id:'i'+Date.now(),type:'img',name:f.name,src:r.result,on:1});assets();$('#st').textContent='Image loaded. Click "Regenerate" to compose.'};r.readAsDataURL(f);e.target.value=''};
-$('#ct').innerHTML=Object.keys(OPT).map(k=>`<label class="c">${CTL_LABELS[k]||k[0].toUpperCase()+k.slice(1)}<select data-c="${k}">${OPT[k].map(o=>`<option ${S.ctl[k]===o?'selected':''}>${o}</option>`).join('')}</select></label>`).join('');
-$('#ct').onchange=e=>{const k=e.target.dataset.c;if(k){S.ctl[k]=e.target.value;$('#st').textContent=`${CTL_LABELS[k]||k} set to "${e.target.value}". Click "Regenerate" to compose.`;if(k==='layout'&&S.vars[0]){S.vars[0].c.layout=e.target.value;draw()}}};
+$('#fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const ex=S.assets.find(a=>a.type==='img');if(ex){ex.src=r.result;ex.name=f.name;ex.on=1}else S.assets.push({id:'i'+Date.now(),type:'img',name:f.name,src:r.result,on:1});assets();updateLive('Background photo loaded')};r.readAsDataURL(f);e.target.value=''};
+
+function renderCreativeControls(){
+const keys=Object.keys(OPT);
+const selects=keys.map(k=>`<label class="c">${CTL_LABELS[k]||k[0].toUpperCase()+k.slice(1)}<select data-c="${k}">${OPT[k].map(o=>`<option ${S.ctl[k]===o?'selected':''}>${o}</option>`).join('')}</select></label>`).join('');
+const ovVal=typeof S.ctl.overlap==='number'?S.ctl.overlap:50;
+const ovText=ovVal<=33?'Low':ovVal<=66?'Medium':'High';
+const slider=`<label class="c">Element overlap (<span id="ov-label">${ovText}</span>)<input type="range" id="ov-slider" data-c="overlap" min="0" max="100" step="5" value="${ovVal}"></label>`;
+$('#ct').innerHTML=selects+slider;
+}
+renderCreativeControls();
+
+$('#ct').onchange=e=>{
+const k=e.target.dataset.c;
+if(k&&k!=='overlap'){
+S.ctl[k]=e.target.value;
+updateLive(`${CTL_LABELS[k]||k} set to "${e.target.value}"`);
+}
+};
+$('#ct').oninput=e=>{
+if(e.target.id==='ov-slider'){
+const val=+e.target.value;
+S.ctl.overlap=val;
+const lbl=$('#ov-label');
+if(lbl)lbl.textContent=val<=33?'Low':val<=66?'Medium':'High';
+updateLive(`Overlap set to ${lbl?lbl.textContent:val}`);
+}
+};
+
 $('#C').onclick=e=>{
 const elTarget=e.target.closest('.el');
 const slideTarget=e.target.closest('.slide');
@@ -409,6 +459,6 @@ $('#regen').onclick=triggerRegen;
 $('#modal-cancel').onclick=()=>{const m=$('#confirm-modal');if(m)m.style.display='none'};
 $('#modal-confirm').onclick=()=>{const m=$('#confirm-modal');if(m)m.style.display='none';performRegen()};
 $('#exp').onclick=async()=>{const v=S.vars[S.sel];if(!v)return;const d=JSON.stringify({format:S.fmt,controls:S.ctl,mode:S.mode,slides:v.sl,edits:S.edits[S.sel]},null,1);
-try{const dl=await claude.use('downloads');if(!dl){$('#st').textContent='Export is unavailable in this view.';return}await dl.save({filename:'composition-spec.json',data:d});$('#st').textContent='Export requested.'}catch(e){$('#st').textContent='Export not completed.'}};
+try{const dl=await claude.use('downloads');if(!dl){$('#st').textContent='Export is unavailable in this view.';return}await dl.save({filename:'poster-spec.json',data:d});$('#st').textContent='Export requested.'}catch(e){$('#st').textContent='Export not completed.'}};
 head();assets();gen();
 </script></body></html>

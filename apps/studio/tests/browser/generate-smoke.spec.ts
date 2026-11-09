@@ -105,12 +105,11 @@ test("Generate uses real Studio layers, applies a reversible layout and publishe
   const afterApply = await readNewestProject(page);
   const afterImage = transformOf(afterApply?.project ?? null, imageId);
   const afterVector = transformOf(afterApply?.project ?? null, vectorId);
-  expect(
-    afterImage.x !== beforeImage.x ||
-      afterImage.y !== beforeImage.y ||
-      afterImage.rotationDegrees !== beforeImage.rotationDegrees ||
-      afterImage.width !== beforeImage.width,
-  ).toBe(true);
+  // Image is always the full-bleed artboard background (never a floating box)
+  expect(afterImage.width).toBe(1080);
+  expect(afterImage.height).toBe(1350);
+  expect(afterImage.x).toBe(0);
+  expect(afterImage.y).toBe(0);
   expect(
     afterVector.x !== beforeVector.x ||
       afterVector.y !== beforeVector.y ||

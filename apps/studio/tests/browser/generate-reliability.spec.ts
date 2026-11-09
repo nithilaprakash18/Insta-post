@@ -124,11 +124,10 @@ test("Generate excludes hidden layers, preserves locked layers and handles missi
   });
   const afterApply = await readNewestProject(page);
   const afterImage = transformOf(afterApply?.project ?? null, image.id);
-  expect(
-    afterImage.x !== beforeRegenerated.x ||
-      afterImage.y !== beforeRegenerated.y ||
-      afterImage.rotationDegrees !== beforeRegenerated.rotationDegrees ||
-      afterImage.width !== beforeRegenerated.width,
-  ).toBe(true);
+  // Image is always the full-bleed artboard background (never a floating box)
+  expect(afterImage.width).toBe(1080);
+  expect(afterImage.height).toBe(1350);
+  expect(afterImage.x).toBe(0);
+  expect(afterImage.y).toBe(0);
   expect((afterApply?.project.layers as Array<Record<string, unknown>>).length).toBe(2);
 });
