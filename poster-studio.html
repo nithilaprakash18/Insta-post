@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Poster Studio · Generative Art</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c1214;
+  --surface: #141e20;
+  --surface-border: #233538;
+  --text: #f0fdf4;
+  --muted: #94a3b8;
+  --accent: #2dd4bf;
+  --accent-hover: #14b8a6;
+  --accent-glow: rgba(45, 212, 191, 0.25);
+  --danger: #f43f5e;
+  --font: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+}
+*, *:before, *:after { box-sizing: inherit; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+header {
+  height: 60px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--surface-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+.brand-badge {
+  background: var(--accent);
+  color: #042f2e;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+button {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--surface-border);
+  background: #1c2b2e;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+button:hover { background: #263a3e; border-color: #385358; }
+button.btn-primary {
+  background: var(--accent);
+  color: #042f2e;
+  border-color: var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+button.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.app-container {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+.sidebar {
+  width: 320px;
+  background: var(--surface);
+  border-right: 1px solid var(--surface-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 16px;
+  gap: 20px;
+  flex-shrink: 0;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.control-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+}
+select, input[type="text"], input[type="number"] {
+  background: #0f1719;
+  border: 1px solid var(--surface-border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+}
+select:focus, input:focus { border-color: var(--accent); }
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.seg-buttons {
+  display: flex;
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.seg-buttons button {
+  flex: 1;
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid var(--surface-border);
+  padding: 6px 10px;
+  font-size: 12px;
+  background: #0f1719;
+  justify-content: center;
+}
+.seg-buttons button:last-child { border-right: none; }
+.seg-buttons button.active {
+  background: #233538;
+  color: var(--accent);
+}
+.asset-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 12px;
+}
+.asset-item input[type="text"] {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.canvas-area {
+  flex: 1;
+  background: #080c0d;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+.status-bar {
+  padding: 8px 16px;
+  background: rgba(20, 30, 32, 0.7);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--surface-border);
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.variations-container {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+.var-wrapper {
+  background: var(--surface);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 16px;
+  width: 100%;
+  max-width: 900px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.var-wrapper:hover { border-color: rgba(45, 212, 191, 0.4); }
+.var-wrapper.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+.var-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.var-badge {
+  background: #233538;
+  color: #a7f3d0;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.slides-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.poster-artboard {
+  position: relative;
+  width: 260px;
+  aspect-ratio: 4/5;
+  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  flex-shrink: 0;
+  background: #111;
+  user-select: none;
+}
+.poster-artboard.format-9-16 {
+  aspect-ratio: 9/16;
+  width: 210px;
+}
+.poster-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.poster-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.poster-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.poster-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+}
+.poster-fallback-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 8px;
+  font-family: monospace;
+  background: rgba(0,0,0,0.7);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #94a3b8;
+}
+.poster-accents {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.poster-texture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+  mix-blend-mode: overlay;
+}
+.poster-el {
+  position: absolute;
+  line-height: 1.02;
+  white-space: pre-line;
+  cursor: pointer;
+  z-index: 3;
+  transition: outline 0.1s ease;
+}
+.poster-el:hover { outline: 1.5px dashed var(--accent); outline-offset: 2px; }
+.poster-el.selected-el {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px var(--accent-glow) !important;
+  z-index: 9999 !important;
+}
+.properties-panel {
+  width: 260px;
+  background: var(--surface);
+  border-left: 1px solid var(--surface-border);
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span>STUDIO 2.0</span>
+    <span class="brand-badge">Poster Engine</span>
+  </div>
+  <div class="header-actions">
+    <button id="btn-undo" title="Undo change">↩ Undo</button>
+    <button id="btn-redo" title="Redo change">↪ Redo</button>
+    <button id="btn-regen" title="Generate new random layout seeds">🎲 Regenerate</button>
+    <button id="btn-download" class="btn-primary" title="Export high-resolution PNG poster">⬇ Download Poster (PNG)</button>
+  </div>
+</header>
+
+<div class="app-container">
+  <!-- Left Sidebar: Creative Direction & Asset Bin -->
+  <aside class="sidebar">
+    <div>
+      <div class="panel-title">Format & Slides</div>
+      <div class="control-group">
+        <label>Aspect Ratio</label>
+        <div class="seg-buttons" id="fmt-buttons">
+          <button class="active" data-fmt="post">4:5 Post</button>
+          <button data-fmt="story">9:16 Story</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Mode</label>
+        <div class="seg-buttons" id="mode-buttons">
+          <button class="active" data-mode="single">Single Post</button>
+          <button data-mode="carousel">Carousel</button>
+        </div>
+      </div>
+      <div class="control-group" id="slides-count-group" style="display:none;">
+        <label>Slides Count</label>
+        <select id="sl-count">
+          <option value="2">2 Slides</option>
+          <option value="3" selected>3 Slides</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel-title">Creative Direction</div>
+      <div class="control-group">
+        <label>Visual Style</label>
+        <select id="ctl-style">
+          <option value="Editorial" selected>Editorial</option>
+          <option value="Minimalist">Minimalist</option>
+          <option value="Experimental">Experimental</option>
+          <option value="Swiss">Swiss</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Element Overlap (<span id="ov-label">Medium</span>)</label>
+        <input type="range" id="ctl-overlap" min="0" max="100" step="5" value="50">
+      </div>
+
+      <div class="control-group">
+        <label>Colour Treatment</label>
+        <select id="ctl-colour">
+          <option value="Preserve original" selected>Preserve original</option>
+          <option value="Monochrome">Monochrome</option>
+          <option value="Complementary">Complementary</option>
+          <option value="High contrast">High contrast</option>
+          <option value="Generate new palette">Generate new palette</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Negative Space</label>
+        <select id="ctl-negative">
+          <option value="Balanced" selected>Balanced</option>
+          <option value="Generous margins">Generous margins</option>
+          <option value="Tight / packed">Tight / packed</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Texture Overlay</label>
+        <select id="ctl-texture">
+          <option value="Film grain" selected>Film grain</option>
+          <option value="Paper">Paper</option>
+          <option value="Noise">Noise</option>
+          <option value="Distressed">Distressed</option>
+          <option value="None">None</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel-title">
+        <span>Assets Bin</span>
+        <button id="btn-add-text" style="padding:2px 8px;font-size:11px;">+ Text</button>
+      </div>
+      <div id="assets-list"></div>
+      <div style="margin-top:10px;">
+        <input type="file" id="file-bg" accept="image/*" style="display:none;">
+        <button id="btn-upload-bg" style="width:100%;justify-content:center;">📷 Upload Background Photo</button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.4;">
+        <b>Poster Rule:</b> Photo is always the full-bleed cover background. Text and graphics layer above it with contrast scrims.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Center Canvas Area -->
+  <main class="canvas-area">
+    <div class="status-bar">
+      <span id="status-text">Visual Style ready. Select any composition or adjust controls live.</span>
+      <span id="dim-indicator">1080 × 1350 px (4:5)</span>
+    </div>
+    <div class="variations-container" id="variations-container"></div>
+  </main>
+
+  <!-- Right Sidebar: Properties & Manual Fine-Tuning -->
+  <aside class="properties-panel">
+    <div class="panel-title">Properties</div>
+    <div id="props-content" style="color:var(--muted);font-size:12px;line-height:1.5;">
+      Click any element in the selected poster to fine-tune its scale, position, color or text.
+    </div>
+  </aside>
+</div>
+
+<script>
+// ---------- Core Engine State ----------
+const S = {
+  fmt: 'post', // 'post' (4:5) or 'story' (9:16)
+  mode: 'single', // 'single' or 'carousel'
+  slides: 3,
+  activeSlide: 0,
+  sel: 0,
+  selectedId: null,
+  seed: 42,
+  history: { undo: [], redo: [] },
+  edits: {},
+  ctl: {
+    style: 'Editorial',
+    overlap: 50,
+    colour: 'Preserve original',
+    negative: 'Balanced',
+    texture: 'Film grain'
+  },
+  assets: [
+    { id: 'a1', type: 'text', role: 'head', text: 'MAKE IT\nLOUD', on: 1 },
+    { id: 'a2', type: 'text', role: 'sub', text: 'ISSUE 04 · AUTUMN 2026 // SPECIAL ARCHIVE', on: 1 },
+    { id: 'a3', type: 'obj', name: '3D Sphere', on: 1 },
+    { id: 'a4', type: 'img', name: 'Photo Background', src: null, on: 1 },
+    { id: 'a5', type: 'vec', name: 'Vector Starburst', on: 1 }
+  ],
+  vars: []
+};
+
+const AR = { head: 0.48, sub: 0.14, obj: 1, img: 1.25, vec: 1 };
+const kind = a => a.type === 'text' ? (a.role || 'sub') : a.type;
+const rngF = a => () => {
+  a |= 0; a = a + 0x6D2B79F5 | 0;
+  let t = Math.imul(a ^ a >>> 15, 1 | a);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ---------- Palette & Color Grading ----------
+function pal(c, seed) {
+  const r = rngF(seed * 7 + 3), h = Math.floor(r() * 360);
+  if (c.colour === 'Monochrome') {
+    return { b1: '#111', fg: '#fff', sub: '#cbd5e1', a1: '#e2e8f0', a2: '#94a3b8', grade: 'filter: grayscale(100%) contrast(125%) brightness(0.85);', scrim: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(10,10,10,0.88) 100%)' };
+  }
+  if (c.colour === 'Complementary') {
+    return { b1: '#0b1523', fg: '#fff', sub: '#fef08a', a1: '#fbbf24', a2: '#f59e0b', grade: 'filter: contrast(115%) brightness(0.75) hue-rotate(-20deg);', scrim: 'linear-gradient(180deg, rgba(11,21,35,0.45) 0%, rgba(7,14,24,0.9) 100%)' };
+  }
+  if (c.colour === 'High contrast') {
+    return { b1: '#000', fg: '#facc15', sub: '#ffffff', a1: '#facc15', a2: '#38bdf8', grade: 'filter: contrast(135%) brightness(0.7);', scrim: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.92) 100%)' };
+  }
+  if (c.colour === 'Generate new palette') {
+    return { b1: `hsl(${h} 40% 12%)`, fg: '#fff', sub: `hsl(${h} 75% 85%)`, a1: `hsl(${h} 85% 65%)`, a2: `hsl(${(h+180)%360} 85% 60%)`, grade: 'filter: contrast(110%) brightness(0.8);', scrim: `linear-gradient(180deg, hsla(${h},35%,12%,0.4) 0%, hsla(${h},45%,8%,0.9) 100%)` };
+  }
+  return { b1: '#102022', fg: '#ffffff', sub: '#CFE4E1', a1: '#2dd4bf', a2: '#0d9488', grade: 'filter: contrast(105%) brightness(0.85);', scrim: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.85) 100%)' };
+}
+
+// ---------- Poster Composition Rules (Style Engine) ----------
+function rules(assets, c, rng, si) {
+  const fg = assets.filter(a => a.on && kind(a) !== 'img');
+  if (!fg.length) return [];
+  const style = c.style || 'Editorial';
+  let m = style === 'Minimalist' ? 18 : style === 'Swiss' ? 7 : style === 'Editorial' ? 8 : 5;
+  if (c.negative === 'Generous margins') m = Math.max(m, 16);
+  else if (c.negative === 'Tight / packed') m = Math.min(m, 6);
+
+  const P = fg.map(a => {
+    const k = kind(a);
+    let w = 32;
+    if (style === 'Editorial') {
+      if (k === 'head') w = 84; else if (k === 'sub') w = 62; else if (k === 'obj') w = 46; else if (k === 'vec') w = 26; else w = 28;
+    } else if (style === 'Minimalist') {
+      if (k === 'head') w = 64; else if (k === 'sub') w = 44; else if (k === 'obj') w = 34; else if (k === 'vec') w = 22; else w = 24;
+    } else if (style === 'Experimental') {
+      if (k === 'head') w = 96; else if (k === 'sub') w = 48; else if (k === 'obj') w = 58; else if (k === 'vec') w = 36; else w = 34;
+    } else if (style === 'Swiss') {
+      if (k === 'head') w = 82; else if (k === 'sub') w = 56; else if (k === 'obj') w = 44; else if (k === 'vec') w = 30; else w = 28;
+    }
+    w = Math.min(w, 100 - m * 1.1);
+    return { a, k, id: a.id, w, h: w * (AR[k] || 0.8), x: 50, y: 62, r: 0, z: { head: 5, sub: 4, obj: 3, vec: 2, motion: 2 }[k] };
+  });
+
+  const head = P.find(p => p.k === 'head');
+  const sub = P.find(p => p.k === 'sub');
+  const obj = P.find(p => p.k === 'obj');
+  const vec = P.find(p => p.k === 'vec');
+  const others = P.filter(p => !['head','sub','obj','vec'].includes(p.k));
+
+  if (style === 'Editorial') {
+    if (si === 0) {
+      if (head) { head.x = m + head.w/2; head.y = m + head.h/2 + 10; }
+      if (sub) { sub.x = m + sub.w/2; sub.y = 125 - m - sub.h/2 - 8; }
+      if (obj) { obj.x = 100 - m - obj.w/2 + 2; obj.y = head ? head.y + head.h/2 + obj.h/2 + 4 : 65; obj.z = 2; }
+      if (vec) { vec.x = 100 - m - vec.w/2; vec.y = 125 - m - vec.h/2 - 8; }
+    } else if (si === 1) {
+      if (obj) { obj.x = 65; obj.y = m + obj.h/2 + 12; }
+      if (head) { head.x = m + head.w/2; head.y = 68; }
+      if (sub) { sub.x = m + sub.w/2; sub.y = 125 - m - sub.h/2 - 6; }
+      if (vec) { vec.x = 100 - m - vec.w/2; vec.y = 125 - m - vec.h/2 - 6; }
+    } else {
+      if (head) { head.x = m + head.w/2; head.y = 48; }
+      if (sub) { sub.x = m + sub.w/2; sub.y = 78; }
+      if (obj) { obj.x = 100 - m - obj.w/2; obj.y = 125 - m - obj.h/2 - 6; }
+      if (vec) { vec.x = 100 - m - vec.w/2; vec.y = m + vec.h/2 + 10; }
+    }
+    others.forEach((p, idx) => { p.x = 50 + (idx % 2 ? 22 : -22); p.y = 65 + idx * 16; });
+
+  } else if (style === 'Minimalist') {
+    if (si === 0) {
+      if (head) { head.x = 50; head.y = 45; }
+      if (sub) { sub.x = 50; sub.y = 125 - m - sub.h/2 - 10; }
+      if (obj) { obj.x = 50; obj.y = 80; }
+      if (vec) { vec.x = 50; vec.y = m + vec.h/2 + 8; }
+    } else if (si === 1) {
+      if (obj) { obj.x = 50; obj.y = 58; }
+      if (head) { head.x = 50; head.y = m + head.h/2 + 10; }
+      if (sub) { sub.x = 50; sub.y = 125 - m - sub.h/2 - 8; }
+      if (vec) { vec.x = 50; vec.y = 96; }
+    } else {
+      if (head) { head.x = 50; head.y = 52; }
+      if (sub) { sub.x = 50; sub.y = 75; }
+      if (obj) { obj.x = 50; obj.y = m + obj.h/2 + 10; }
+      if (vec) { vec.x = 50; vec.y = 125 - m - vec.h/2 - 8; }
+    }
+    others.forEach((p, idx) => { p.x = 50; p.y = 62 + (idx % 2 ? 26 : -26); });
+
+  } else if (style === 'Experimental') {
+    const angle = (si % 2 === 0 ? -6 : 7);
+    if (head) { head.x = 50 + (si === 0 ? -2 : 4); head.y = 36 + (si * 8); head.r = angle; head.z = 5; }
+    if (obj) { obj.x = 64 + (si === 1 ? -15 : 0); obj.y = 70 + (si === 0 ? 0 : -8); obj.r = -angle * 1.5; obj.z = 6; }
+    if (sub) { sub.x = 36; sub.y = 92 - (si * 6); sub.r = -angle; sub.z = 4; }
+    if (vec) { vec.x = 24; vec.y = 55; vec.r = angle * 2.5; vec.z = 3; }
+    others.forEach((p, idx) => { p.x = 50 + (idx % 2 ? 28 : -28); p.y = 60 + idx * 22; p.r = (idx % 2 ? 12 : -12); });
+
+  } else if (style === 'Swiss') {
+    const colLeft = m + (head ? head.w/2 : 35);
+    if (si === 0) {
+      if (head) { head.x = m + head.w/2; head.y = m + head.h/2 + 6; }
+      if (sub) { sub.x = m + sub.w/2; sub.y = m + (head ? head.h : 20) + sub.h/2 + 18; }
+      if (obj) { obj.x = 100 - m - obj.w/2; obj.y = 125 - m - obj.h/2 - 8; }
+      if (vec) { vec.x = 100 - m - vec.w/2; vec.y = m + vec.h/2 + 14; }
+    } else if (si === 1) {
+      if (head) { head.x = 100 - m - head.w/2; head.y = m + head.h/2 + 6; }
+      if (sub) { sub.x = 100 - m - sub.w/2; sub.y = m + (head ? head.h : 20) + sub.h/2 + 18; }
+      if (obj) { obj.x = m + obj.w/2; obj.y = 125 - m - obj.h/2 - 8; }
+      if (vec) { vec.x = m + vec.w/2; vec.y = 65; }
+    } else {
+      if (head) { head.x = m + head.w/2; head.y = 44; }
+      if (sub) { sub.x = m + sub.w/2; sub.y = 68; }
+      if (obj) { obj.x = 100 - m - obj.w/2; obj.y = 125 - m - obj.h/2 - 8; }
+      if (vec) { vec.x = 100 - m - vec.w/2; vec.y = m + vec.h/2 + 8; }
+    }
+    others.forEach((p, idx) => { p.x = colLeft; p.y = 75 + idx * 16; });
+  }
+
+  return P.map(p => ({ id: p.id, x: +p.x.toFixed(1), y: +p.y.toFixed(1), w: +p.w.toFixed(1), r: +(p.r||0).toFixed(1), z: p.z }));
+}
+
+// ---------- Visual Accents & Overlays ----------
+function accHtml(c, P) {
+  const s = 'position:absolute;', f = P.fg, st = c.style || 'Editorial';
+  if (st === 'Swiss') {
+    return `<div class="poster-accents" style="color:${f};"><div style="${s}left:7%;top:4%;font:700 8px monospace;letter-spacing:.1em;opacity:.85">01 // SWISS GRID</div><div style="${s}right:7%;top:4%;font:500 7px monospace;opacity:.65">FIG. 1.0</div><div style="${s}left:7%;right:7%;top:7.5%;height:1px;background:${f};opacity:.35"></div><div style="${s}left:7%;bottom:4%;font:500 7px monospace;opacity:.65">CH-8001 · ZÜRICH</div><div style="${s}right:7%;bottom:4%;font:700 8px monospace;opacity:.85">+ +</div></div>`;
+  }
+  if (st === 'Editorial') {
+    return `<div class="poster-accents" style="color:${f};"><div style="${s}left:8%;top:3.6%;font:600 7px var(--font);letter-spacing:.14em;text-transform:uppercase;opacity:.85">ISSUE 04 · EDITORIAL</div><div style="${s}right:8%;top:3.6%;font:500 6.5px var(--font);opacity:.7">AUTUMN 2026</div><div style="${s}left:8%;right:8%;top:6.5%;height:1px;background:${f};opacity:.4"></div><div style="${s}left:8%;bottom:3.6%;font:500 6px var(--font);letter-spacing:.06em;opacity:.75">ARCHIVE EDITION</div><div style="${s}right:8%;bottom:3.6%;font:600 6px var(--font);opacity:.75">P. 14–28</div></div>`;
+  }
+  if (st === 'Minimalist') {
+    return `<div class="poster-accents" style="color:${f};"><div style="${s}left:50%;bottom:4%;transform:translateX(-50%);font:400 6px var(--font);letter-spacing:.25em;opacity:.55;text-transform:uppercase">— · —</div></div>`;
+  }
+  if (st === 'Experimental') {
+    return `<div class="poster-accents" style="color:${f};"><div style="${s}left:5%;top:3%;font:800 9px monospace;letter-spacing:.05em;opacity:.9">↗ [EXP.01]</div><div style="${s}right:5%;top:3%;font:800 9px monospace;letter-spacing:.1em;opacity:.9">+ + +</div><div style="${s}left:5%;bottom:3%;font:700 8px monospace;opacity:.85">RAW KINETIC // 2026</div><div style="${s}right:5%;bottom:3%;font:800 8.5px monospace;opacity:.9">● REC</div></div>`;
+  }
+  return '';
+}
+
+function texHtml(t) {
+  if (!t || t === 'None') return '';
+  const noiseSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.3'/></svg>`;
+  return `<div class="poster-texture" style="background-image:url('data:image/svg+xml;utf8,${encodeURIComponent(noiseSvg)}');"></div>`;
+}
+
+// ---------- Element Markup Generator ----------
+function elHtml(p, a, P, c, isSel) {
+  const k = kind(a), s = c.style || 'Editorial';
+  let st = `left:${p.x}%;top:${p.y/1.25}%;width:${p.w}%;transform:translate(-50%,-50%) rotate(${p.r}deg);z-index:${p.z};`;
+  const txtCol = p.color || (k === 'head' ? P.fg : P.sub);
+  const txtVal = p.text !== undefined ? p.text : a.text;
+  let h = '';
+
+  const textShadow = s === 'Minimalist'
+    ? 'text-shadow:0 1px 8px rgba(0,0,0,0.4);'
+    : s === 'Experimental'
+      ? 'text-shadow:0 4px 20px rgba(0,0,0,0.85), 0 1px 3px #000;'
+      : 'text-shadow:0 2px 14px rgba(0,0,0,0.65);';
+
+  if (k === 'head') {
+    let align = 'left', fStyle = '';
+    if (s === 'Editorial') { align = 'left'; fStyle = `font: 700 ${p.w * 0.26}px/0.96 var(--font); letter-spacing: -0.035em; text-transform: uppercase;`; }
+    else if (s === 'Minimalist') { align = 'center'; fStyle = `font: 400 ${p.w * 0.19}px/1.2 var(--font); letter-spacing: 0.08em;`; }
+    else if (s === 'Experimental') { align = 'center'; fStyle = `font: 800 ${p.w * 0.32}px/0.86 var(--font); letter-spacing: -0.05em; text-transform: uppercase;`; }
+    else if (s === 'Swiss') { align = 'left'; fStyle = `font: 800 ${p.w * 0.28}px/0.92 var(--font); letter-spacing: -0.04em;`; }
+    st += `color:${txtCol};text-align:${align};${fStyle}${textShadow}`;
+    h = esc(txtVal);
+  } else if (k === 'sub') {
+    let align = 'left', fStyle = '';
+    if (s === 'Editorial') { align = 'left'; fStyle = `font: 500 ${p.w * 0.085}px/1.25 var(--font); letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.9; border-top: 1px solid rgba(255,255,255,0.4); padding-top: 4px;`; }
+    else if (s === 'Minimalist') { align = 'center'; fStyle = `font: 400 ${p.w * 0.07}px/1.4 var(--font); letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.8;`; }
+    else if (s === 'Experimental') { align = 'center'; fStyle = `font: 700 ${p.w * 0.09}px/1.1 var(--font); letter-spacing: -0.02em; text-transform: uppercase; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 2px;`; }
+    else if (s === 'Swiss') { align = 'left'; fStyle = `font: 500 ${p.w * 0.08}px/1.2 var(--font); letter-spacing: -0.01em; opacity: 0.95;`; }
+    st += `color:${txtCol};text-align:${align};${fStyle}${textShadow}`;
+    h = esc(txtVal);
+  } else if (k === 'obj') {
+    st += `background: radial-gradient(circle at 32% 28%, #fff 0, ${P.a2} 30%, ${P.a1} 75%, #000 130%); box-shadow: 0 8px 24px rgba(0,0,0,0.5); aspect-ratio: 1; border-radius: 50%;`;
+  } else if (k === 'vec') {
+    st += 'aspect-ratio: 1;';
+    const fil = p.color || P.a1;
+    const pts = Array.from({length: 24}, (_, i) => {
+      const r = i % 2 ? 28 : 48, an = i * Math.PI / 12;
+      return (50 + r * Math.cos(an)).toFixed(1) + ',' + (50 + r * Math.sin(an)).toFixed(1);
+    }).join(' ');
+    h = `<svg viewBox="0 0 100 100" style="width:100%;height:100%;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5))"><polygon points="${pts}" fill="${fil}"/></svg>`;
+  }
+  return `<div class="poster-el${isSel ? ' selected-el' : ''}" data-el-id="${esc(p.id)}" style="${st}">${h}</div>`;
+}
+
+// ---------- Variation Generator ----------
+function generateVariations() {
+  const stylesList = ['Editorial', 'Minimalist', 'Experimental', 'Swiss'];
+  const otherStyles = stylesList.filter(s => s !== S.ctl.style);
+  const out = [];
+
+  for (let v = 0; v < 3; v++) {
+    const assignedStyle = v === 0 ? S.ctl.style : otherStyles[(v - 1) % otherStyles.length];
+    const c = Object.assign({}, S.ctl, { style: assignedStyle });
+    const seed = S.seed * 100 + v * 17;
+    const nSlides = S.mode === 'carousel' ? S.slides : 1;
+    const sl = [];
+    for (let sIdx = 0; sIdx < nSlides; sIdx++) {
+      sl.push(rules(S.assets, c, rngF(seed + sIdx * 31), sIdx));
+    }
+    out.push({ c, seed, sl, style: assignedStyle });
+  }
+  S.vars = out;
+  renderCompositions();
+}
+
+// ---------- Render UI ----------
+function renderCompositions() {
+  const container = document.getElementById('variations-container');
+  const bgAsset = S.assets.find(a => kind(a) === 'img' && a.on && a.src);
+  const imgSrc = bgAsset ? bgAsset.src : '';
+
+  container.innerHTML = S.vars.map((v, vIdx) => {
+    const isSelected = vIdx === S.sel;
+    const P = pal(v.c, v.seed);
+    const nSlides = S.mode === 'carousel' ? S.slides : 1;
+
+    const slidesHtml = Array.from({length: nSlides}, (_, sIdx) => {
+      const pl = v.sl[sIdx] || [];
+      const elementsHtml = pl.map(p => {
+        const a = S.assets.find(x => x.id === p.id);
+        if (!a || !a.on) return '';
+        const isSelEl = S.sel === vIdx && S.selectedId === p.id;
+        return elHtml(p, a, P, v.c, isSelEl);
+      }).join('');
+
+      return `
+        <div class="poster-artboard ${S.fmt === 'story' ? 'format-9-16' : ''}" data-v="${vIdx}" data-s="${sIdx}">
+          <div class="poster-bg">
+            ${imgSrc 
+              ? `<img src="${imgSrc}" class="poster-bg-img" style="${P.grade}">`
+              : `<div class="poster-fallback"><div class="poster-fallback-badge">No photo supplied · Poster tone</div></div>`
+            }
+            <div class="poster-scrim" style="background:${P.scrim};"></div>
+          </div>
+          ${elementsHtml}
+          ${accHtml(v.c, P)}
+          ${texHtml(v.c.texture)}
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="var-wrapper ${isSelected ? 'selected' : ''}" data-v="${vIdx}">
+        <div class="var-header">
+          <span>Alternative ${vIdx + 1} · <span class="var-badge">${v.style}</span></span>
+          <span style="font-size:12px;color:${isSelected ? 'var(--accent)' : 'var(--muted)'};">${isSelected ? '● Active Selection' : 'Click to Select'}</span>
+        </div>
+        <div class="slides-row">${slidesHtml}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('dim-indicator').textContent = S.fmt === 'story' ? '1080 × 1920 px (9:16 Story)' : '1080 × 1350 px (4:5 Post)';
+}
+
+function renderAssets() {
+  const container = document.getElementById('assets-list');
+  container.innerHTML = S.assets.map(a => `
+    <div class="asset-item">
+      <input type="checkbox" data-id="${a.id}" ${a.on ? 'checked' : ''}>
+      ${a.type === 'text' 
+        ? `<input type="text" data-text-id="${a.id}" value="${esc(a.text)}">` 
+        : `<span>${esc(a.name)}${a.type === 'img' && a.src ? ' (Loaded)' : ''}</span>`
+      }
+    </div>
+  `).join('');
+}
+
+// ---------- High-Resolution Canvas PNG Export Pipeline ----------
+async function downloadActivePoster() {
+  const activeVar = S.vars[S.sel];
+  if (!activeVar) return;
+  const status = document.getElementById('status-text');
+  status.textContent = 'Rendering high-resolution 1080px poster...';
+
+  const isStory = S.fmt === 'story';
+  const width = 1080;
+  const height = isStory ? 1920 : 1350;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+
+  const P = pal(activeVar.c, activeVar.seed);
+  const bgAsset = S.assets.find(a => kind(a) === 'img' && a.on && a.src);
+
+  // 1. Draw Background
+  if (bgAsset && bgAsset.src) {
+    await new Promise((res) => {
+      const img = new Image();
+      img.onload = () => {
+        const imgRatio = img.width / img.height;
+        const targetRatio = width / height;
+        let sw, sh, sx, sy;
+        if (imgRatio > targetRatio) {
+          sh = img.height; sw = sh * targetRatio;
+          sx = (img.width - sw) / 2; sy = 0;
+        } else {
+          sw = img.width; sh = sw / targetRatio;
+          sx = 0; sy = (img.height - sh) / 2;
+        }
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
+        res();
+      };
+      img.onerror = res;
+      img.src = bgAsset.src;
+    });
+  } else {
+    const grad = ctx.createLinearGradient(0, 0, width, height);
+    grad.addColorStop(0, '#0f2027');
+    grad.addColorStop(0.5, '#203a43');
+    grad.addColorStop(1, '#2c5364');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  // 2. Scrim
+  const scrimGrad = ctx.createLinearGradient(0, 0, 0, height);
+  scrimGrad.addColorStop(0, 'rgba(0,0,0,0.3)');
+  scrimGrad.addColorStop(0.5, 'rgba(0,0,0,0.45)');
+  scrimGrad.addColorStop(1, 'rgba(0,0,0,0.88)');
+  ctx.fillStyle = scrimGrad;
+  ctx.fillRect(0, 0, width, height);
+
+  // 3. Foreground Elements
+  const slidePlacements = activeVar.sl[S.activeSlide || 0] || [];
+  for (const p of slidePlacements) {
+    const a = S.assets.find(x => x.id === p.id);
+    if (!a || !a.on) continue;
+    const k = kind(a);
+    const px = (p.x / 100) * width;
+    const py = (p.y / 125) * height;
+
+    if (k === 'head' || k === 'sub') {
+      const isHead = k === 'head';
+      const text = a.text;
+      ctx.save();
+      ctx.translate(px, py);
+      if (p.r) ctx.rotate((p.r * Math.PI) / 180);
+      ctx.fillStyle = p.color || (isHead ? P.fg : P.sub);
+      ctx.textAlign = activeVar.style === 'Minimalist' ? 'center' : (activeVar.style === 'Swiss' ? 'left' : 'left');
+      
+      const fontSize = isHead
+        ? Math.round(width * (activeVar.style === 'Experimental' ? 0.088 : 0.076))
+        : Math.round(width * 0.024);
+      const fontWeight = isHead ? (activeVar.style === 'Minimalist' ? '400' : '800') : '500';
+      ctx.font = `${fontWeight} ${fontSize}px "Instrument Sans", sans-serif`;
+      ctx.shadowColor = 'rgba(0,0,0,0.7)';
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 4;
+
+      const lines = text.split('\n');
+      const lineHeight = fontSize * 1.05;
+      const startY = -((lines.length - 1) * lineHeight) / 2;
+      lines.forEach((line, idx) => {
+        ctx.fillText(line, 0, startY + idx * lineHeight);
+      });
+      ctx.restore();
+    } else if (k === 'obj') {
+      const radius = Math.round((p.w / 100) * width * 0.5);
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      const radGrad = ctx.createRadialGradient(-radius*0.3, -radius*0.3, 0, 0, 0, radius);
+      radGrad.addColorStop(0, '#ffffff');
+      radGrad.addColorStop(0.3, P.a2);
+      radGrad.addColorStop(0.75, P.a1);
+      radGrad.addColorStop(1, '#000000');
+      ctx.fillStyle = radGrad;
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetY = 12;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // 4. Download Trigger
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `poster-${activeVar.style.toLowerCase()}-${Date.now()}.png`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    status.textContent = `Export complete! Saved ${link.download} (${width}x${height}).`;
+  }, 'image/png');
+}
+
+// ---------- Event Listeners ----------
+document.getElementById('ctl-style').onchange = e => {
+  S.ctl.style = e.target.value;
+  generateVariations();
+  document.getElementById('status-text').textContent = `Visual style updated to "${e.target.value}".`;
+};
+document.getElementById('ctl-overlap').oninput = e => {
+  const val = +e.target.value;
+  S.ctl.overlap = val;
+  document.getElementById('ov-label').textContent = val <= 33 ? 'Low' : val <= 66 ? 'Medium' : 'High';
+  generateVariations();
+};
+document.getElementById('ctl-colour').onchange = e => {
+  S.ctl.colour = e.target.value;
+  renderCompositions();
+};
+document.getElementById('ctl-negative').onchange = e => {
+  S.ctl.negative = e.target.value;
+  generateVariations();
+};
+document.getElementById('ctl-texture').onchange = e => {
+  S.ctl.texture = e.target.value;
+  renderCompositions();
+};
+
+document.getElementById('fmt-buttons').onclick = e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  document.querySelectorAll('#fmt-buttons button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  S.fmt = btn.dataset.fmt;
+  renderCompositions();
+};
+
+document.getElementById('mode-buttons').onclick = e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  document.querySelectorAll('#mode-buttons button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  S.mode = btn.dataset.mode;
+  document.getElementById('slides-count-group').style.display = S.mode === 'carousel' ? 'flex' : 'none';
+  generateVariations();
+};
+
+document.getElementById('sl-count').onchange = e => {
+  S.slides = +e.target.value;
+  generateVariations();
+};
+
+document.getElementById('btn-regen').onclick = () => {
+  S.seed++;
+  generateVariations();
+  document.getElementById('status-text').textContent = 'Regenerated new composition alternatives.';
+};
+
+document.getElementById('btn-download').onclick = downloadActivePoster;
+
+document.getElementById('assets-list').onchange = e => {
+  const cb = e.target.closest('input[type="checkbox"]');
+  if (cb) {
+    const a = S.assets.find(x => x.id === cb.dataset.id);
+    if (a) a.on = cb.checked ? 1 : 0;
+    generateVariations();
+  }
+};
+document.getElementById('assets-list').oninput = e => {
+  const txt = e.target.closest('input[type="text"]');
+  if (txt) {
+    const a = S.assets.find(x => x.id === txt.dataset.textId);
+    if (a) a.text = txt.value;
+    renderCompositions();
+  }
+};
+
+document.getElementById('btn-add-text').onclick = () => {
+  S.assets.push({ id: 't' + Date.now(), type: 'text', role: 'sub', text: 'New Supporting Text', on: 1 });
+  renderAssets();
+  generateVariations();
+};
+
+document.getElementById('btn-upload-bg').onclick = () => document.getElementById('file-bg').click();
+document.getElementById('file-bg').onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const bg = S.assets.find(a => a.type === 'img');
+    if (bg) { bg.src = reader.result; bg.on = 1; }
+    renderAssets();
+    renderCompositions();
+    document.getElementById('status-text').textContent = 'Custom photo background applied full-bleed.';
+  };
+  reader.readAsDataURL(f);
+};
+
+document.getElementById('variations-container').onclick = e => {
+  const wrapper = e.target.closest('.var-wrapper');
+  if (wrapper) {
+    S.sel = +wrapper.dataset.v;
+    renderCompositions();
+  }
+};
+
+// ---------- Init ----------
+renderAssets();
+generateVariations();
+</script>
+</body>
+</html>
