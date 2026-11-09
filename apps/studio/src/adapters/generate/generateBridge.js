@@ -521,6 +521,8 @@
       S.slides = Math.max(1, Math.min(3, Number(documentState.slides) || 1));
       S.seed = Number.isFinite(documentState.seed) ? Number(documentState.seed) : 1;
       S.ctl = Object.assign({}, S.ctl, deepCloneDocument(documentState.controls));
+      S.edits = documentState.edits ? deepCloneDocument(documentState.edits) : {};
+      S.selectedId = null;
       const savedAssets = Array.isArray(documentState.assets)
         ? documentState.assets
         : [];
@@ -639,6 +641,7 @@
         ? { id: artboard.id, width: artboard.width, height: artboard.height }
         : null,
       frameHeight: frameHeight,
+      edits: deepCloneDocument(S.edits || {}),
       background: selected
         ? {
             controls: deepCloneDocument(selected.c),
@@ -749,6 +752,7 @@
         ? asset.aspectHOverW
         : 0.8;
     const top = (placement.y / frameHeight) * 100;
+    const isSelected = S.selectedId === placement.id;
     let style =
       "left:" +
       placement.x +
@@ -765,17 +769,24 @@
       ";opacity:" +
       (typeof asset.opacity === "number" ? asset.opacity : 1) +
       ";";
+    if (placement.hidden) {
+      style += "display:none;";
+    }
+    if (placement.color) {
+      style += "color:" + placement.color + ";";
+    }
     if (!asset.src) {
       style +=
-        "background:rgba(25,52,56,.08);border:1px dashed rgba(25,52,56,.35);display:grid;place-items:center;font:600 3.2cqw/1.2 system-ui,sans-serif;color:#526C6E;text-align:center;padding:2cqw;";
+        "background:rgba(25,52,56,.08);border:1px dashed rgba(25,52,56,.35);display:grid;place-items:center;font:600 3.2cqw/1.2 system-ui,sans-serif;color:" + (placement.color || "#526C6E") + ";text-align:center;padding:2cqw;";
     }
+    const currentText = placement.text !== undefined ? placement.text : (asset.text || asset.name);
     const label = !asset.src
-      ? '<span style="overflow:hidden;text-overflow:ellipsis">' + esc(asset.name) + "</span>"
+      ? '<span style="overflow:hidden;text-overflow:ellipsis">' + esc(currentText) + "</span>"
       : '<img src="' +
         esc(asset.src) +
         '" alt="" draggable="false" style="display:block;width:100%;height:100%;object-fit:contain">';
     void image;
-    return '<div class="el host-el" style="' + style + '">' + label + "</div>";
+    return '<div class="el host-el' + (isSelected ? ' selected-el' : '') + '" data-el-id="' + esc(placement.id) + '" style="' + style + '">' + label + "</div>";
   }
 
   async function renderArtwork(request) {

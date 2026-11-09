@@ -67,6 +67,7 @@ export interface GenerateSourceStateV1 {
     seed: number;
     slide: number;
   } | null;
+  edits?: Record<string, Record<string, Record<string, unknown>>>;
 }
 
 export interface GenerateLayoutTarget {
@@ -247,6 +248,7 @@ export function parseGenerateSourceState(
           slide: finite(parsed.background.slide ?? 0, "background.slide"),
         }
       : null,
+    edits: isRecord(parsed.edits) ? structuredClone(parsed.edits) as Record<string, Record<string, Record<string, unknown>>> : undefined,
   };
 }
 
@@ -273,23 +275,33 @@ export function selectedGenerateTargets(
   const variant = source.variations[source.selected];
   if (!variant) return [];
   const slide = variant.sl[0] ?? [];
+  const variantEdits = source.edits?.[String(source.selected)] || source.edits?.[source.selected];
+  const slideEdits = variantEdits?.[0] || (variantEdits as Record<string, unknown> | undefined)?.[String(0)];
+  const editsMap = (isRecord(slideEdits) ? slideEdits : {}) as Record<string, Record<string, unknown>>;
   const assets = new Map(source.assets.map((asset) => [asset.id, asset]));
   const targets: GenerateLayoutTarget[] = [];
   for (const placement of slide) {
+    const override = editsMap[placement.id];
+    if (override && override.hidden === true) continue;
     const asset = assets.get(placement.id);
     if (!asset?.hostLayerId || asset.missing) continue;
     const aspectHOverW =
       typeof asset.aspectHOverW === "number" && asset.aspectHOverW > 0
         ? asset.aspectHOverW
         : 0.8;
+    const x = typeof override?.x === "number" ? override.x : placement.x;
+    const y = typeof override?.y === "number" ? override.y : placement.y;
+    const w = typeof override?.w === "number" ? override.w : placement.w;
+    const r = typeof override?.r === "number" ? override.r : placement.r;
+    const z = typeof override?.z === "number" ? (override.z as number) : placement.z;
     targets.push({
       hostLayerId: asset.hostLayerId,
-      centerXPercent: placement.x,
-      centerYPercent: (placement.y / source.frameHeight) * 100,
-      widthPercent: placement.w,
+      centerXPercent: x,
+      centerYPercent: (y / source.frameHeight) * 100,
+      widthPercent: w,
       aspectHOverW,
-      rotationDegrees: placement.r,
-      z: placement.z,
+      rotationDegrees: r,
+      z,
     });
   }
   return targets;

@@ -144,4 +144,31 @@ describe("Generate source state 1.0.0", () => {
     );
     expect(selectedGenerateTargets(parsed)).toEqual([]);
   });
+
+  it("applies edited overrides to targets and skips hidden elements", () => {
+    const parsed = parseGenerateSourceState(
+      JSON.stringify(
+        document({
+          edits: {
+            "0": {
+              "0": {
+                "host:layer_image": { x: 75, y: 80, w: 50, r: 15, z: 9 },
+                "host:layer_type": { hidden: true },
+              },
+            },
+          },
+        }),
+      ),
+    );
+    const targets = selectedGenerateTargets(parsed);
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatchObject({
+      hostLayerId: "layer_image",
+      centerXPercent: 75,
+      centerYPercent: (80 / 125) * 100,
+      widthPercent: 50,
+      rotationDegrees: 15,
+      z: 9,
+    });
+  });
 });
